@@ -9,11 +9,11 @@ const { ClientError } = require('./exceptions/ClientError');
 
 const init = async () => {
   const pool = new Pool({
-    user: process.env.POSTGRES_USER,
-    host: process.env.POSTGRES_HOST,
-    port: process.env.POSTGRES_PORT,
-    database: process.env.POSTGRES_DB,
-    password: process.env.POSTGRES_PASSWORD,
+    user: process.env.PGUSER,
+    host: process.env.PGHOST,
+    port: process.env.PGPORT,
+    database: process.env.PGDATABASE,
+    password: process.env.PGPASSWORD,
   });
 
   const albumService = new AlbumService(pool);
