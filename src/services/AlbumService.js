@@ -21,7 +21,7 @@ class AlbumService {
     const result = await this._pool.query(query);
 
     if (!result.rows[0].id) {
-      throw new InvariantError('Catatan gagal ditambahkan');
+      throw new InvariantError('Album gagal ditambahkan');
     }
 
     return result.rows[0].id;
@@ -33,20 +33,33 @@ class AlbumService {
       values: [id],
     };
 
+    const songsQuery = {
+      text: 'SELECT id, title, performer FROM songs WHERE "albumId" = $1',
+      values: [id],
+
+    };
+
     const result = await this._pool.query(query);
+
+    const songs = await this._pool.query(songsQuery);
+
+    const finalResult = {
+      ...result.rows[0],
+      songs: songs.rows,
+    };
 
     if (!result.rows.length) {
       throw new NotFoundError('Album tidak ditemukan');
     }
 
-    return result.rows[0];
+    return finalResult;
   }
 
   async updateAlbumById(id, { name, year }) {
     const updatedAt = new Date().toISOString();
 
     const query = {
-      text: 'UPDATE albums SET name = $1, year = $2, updated_at = $3 WHERE id = $4 RETURNING id',
+      text: 'UPDATE albums SET name = $1, year = $2, "updatedAt" = $3 WHERE id = $4 RETURNING id',
       values: [name, year, updatedAt, id],
     };
 

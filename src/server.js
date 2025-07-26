@@ -6,6 +6,9 @@ const { AlbumService } = require('./services/AlbumService');
 const albums = require('./api/albums');
 const { AlbumsValidator } = require('./validator/albums');
 const { ClientError } = require('./exceptions/ClientError');
+const songs = require('./api/songs');
+const { SongService } = require('./services/SongService');
+const { SongsValidator } = require('./validator/songs');
 
 const init = async () => {
   const pool = new Pool({
@@ -17,6 +20,7 @@ const init = async () => {
   });
 
   const albumService = new AlbumService(pool);
+  const songService = new SongService(pool);
 
   const server = Hapi.server({
     port: process.env.API_PORT,
@@ -31,12 +35,25 @@ const init = async () => {
   server.ext('onPreResponse', (request, h) => {
     const { response } = request;
 
-    if (response instanceof ClientError) {
+    if (response instanceof Error) {
+      if (response instanceof ClientError) {
+        const newResponse = h.response({
+          status: 'fail',
+          message: response.message,
+        });
+        newResponse.code(response.statusCode);
+        return newResponse;
+      }
+
+      if (!response.isServer) {
+        return h.continue;
+      }
+
       const newResponse = h.response({
-        status: 'fail',
-        message: response.message,
+        status: 'error',
+        message: 'terjadi kegagalan pada server kami',
       });
-      newResponse.code(response.statusCode);
+      newResponse.code(500);
       return newResponse;
     }
 
@@ -48,9 +65,14 @@ const init = async () => {
     options: {
       service: albumService,
       validator: AlbumsValidator,
-      r: {
-        prefix: '/albums',
-      },
+    },
+  });
+
+  await server.register({
+    plugin: songs,
+    options: {
+      service: songService,
+      validator: SongsValidator,
     },
   });
 

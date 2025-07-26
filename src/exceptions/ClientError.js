@@ -1,8 +1,8 @@
 class ClientError extends Error {
-  constructor(message) {
+  constructor(message, statusCode = 500) {
     super(message);
     this.name = 'ClientError';
-    this.statusCode = 500;
+    this.statusCode = statusCode;
   }
 }
 

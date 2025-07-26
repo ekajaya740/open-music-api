@@ -1,22 +1,22 @@
-const routes = (handler, r) => [
+const routes = (handler) => [
   {
     method: 'POST',
-    path: `${r.prefix}`,
+    path: '/albums',
     handler: handler.postAlbumHandler,
   },
   {
     method: 'GET',
-    path: `${r.prefix}/{id}`,
+    path: '/albums/{id}',
     handler: handler.getAlbumByIdHandler,
   },
   {
     method: 'PUT',
-    path: `${r.prefix}/{id}`,
+    path: '/albums/{id}',
     handler: handler.putAlbumByIdHandler,
   },
   {
     method: 'DELETE',
-    path: `${r.prefix}/{id}`,
+    path: '/albums/{id}',
     handler: handler.deleteAlbumByIdHandler,
   },
 ];
