@@ -40,4 +40,4 @@ class AuthenticationsService {
   }
 }
 
-module.exports = { AuthenticationsService };
+module.exports = AuthenticationsService;
