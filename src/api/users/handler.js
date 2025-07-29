@@ -19,7 +19,7 @@ class UsersHandler {
         },
       });
 
-      response.code(200);
+      response.code(201);
 
       return response;
     } catch (e) {

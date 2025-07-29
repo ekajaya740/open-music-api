@@ -1,3 +1,5 @@
+const { InvariantError } = require('../exceptions/InvariantError');
+
 class AuthenticationsService {
   constructor(pool) {
     this._pool = pool;
@@ -15,17 +17,22 @@ class AuthenticationsService {
   }
 
   async verifyRefreshToken(token) {
+    console.log('Input token:', JSON.stringify(token));
+    console.log('Token length:', token.length);
+    console.log('Token type:', typeof token);
+
     const query = {
       text: 'SELECT token FROM authentications WHERE token = $1',
       values: [token],
     };
 
     const result = await this._pool.query(query);
+    console.log('Query result rows:', result.rows.length);
+    console.log('All tokens in DB:', await this._pool.query('SELECT token FROM authentications'));
 
     if (!result.rows.length) {
       throw new InvariantError('Refresh token tidak valid');
     }
-
     return result.rows[0].token;
   }
 

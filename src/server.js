@@ -17,7 +17,7 @@ const { UsersValidator } = require('./validator/users');
 const authentications = require('./api/authentications');
 const AuthenticationsService = require('./services/AuthenticationsService');
 const TokenManager = require('./tokenize/TokenManager');
-const AuthenticationsValidator = require('./validator/authentications');
+const { AuthenticationsValidator } = require('./validator/authentications');
 
 const init = async () => {
   const pool = new Pool({
@@ -46,12 +46,15 @@ const init = async () => {
   server.ext('onPreResponse', (request, h) => {
     const { response } = request;
 
+    console.log(response);
+
     if (response instanceof Error) {
       if (response instanceof ClientError) {
         const newResponse = h.response({
           status: 'fail',
           message: response.message,
         });
+
         newResponse.code(response.statusCode);
         return newResponse;
       }
@@ -61,7 +64,7 @@ const init = async () => {
       }
 
       const newResponse = h.response({
-        status: 'error',
+        status: 'fail',
         message: 'terjadi kegagalan pada server kami',
       });
       newResponse.code(500);

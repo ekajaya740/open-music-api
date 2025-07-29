@@ -7,6 +7,17 @@ class AuthenticationsHandler {
   }
 
   async postAuthenticationHandler(request, h) {
+    if (!request.payload) {
+      const response = h.response({
+        status: 'fail',
+        message: 'Gagal menambahkan authentication. Mohon isi username dan password',
+      });
+
+      response.code(400);
+
+      return response;
+    }
+
     this._validator.validatePostPayload(request.payload);
 
     const { username, password } = request.payload;
@@ -34,7 +45,11 @@ class AuthenticationsHandler {
     this._validator.validatePutPayload(request.payload);
 
     const { refreshToken } = request.payload;
+
+    console.log('REFRESH', refreshToken);
+
     await this._authenticationsService.verifyRefreshToken(refreshToken);
+
     const { id } = this._tokenManager.verifyRefreshToken(refreshToken);
 
     const accessToken = this._tokenManager.generateAccessToken({ id });
