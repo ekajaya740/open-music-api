@@ -2,7 +2,7 @@ const { nanoid } = require('nanoid');
 const { NotFoundError } = require('../exceptions/NotFoundError');
 const { InvariantError } = require('../exceptions/InvariantError');
 
-class AlbumService {
+class AlbumsService {
   constructor(pool) {
     this._pool = pool;
   }
@@ -86,4 +86,4 @@ class AlbumService {
   }
 }
 
-module.exports = { AlbumService };
+module.exports = { AlbumsService };
