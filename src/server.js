@@ -18,6 +18,10 @@ const authentications = require('./api/authentications');
 const AuthenticationsService = require('./services/AuthenticationsService');
 const TokenManager = require('./tokenize/TokenManager');
 const { AuthenticationsValidator } = require('./validator/authentications');
+const playlists = require('./api/playlists');
+const { PlaylistsService } = require('./services/PlaylistsService');
+const { PlaylistsValidator } = require('./validator/playlists');
+const CollaborationsService = require('./services/CollaborationsService');
 
 const init = async () => {
   const pool = new Pool({
@@ -32,6 +36,8 @@ const init = async () => {
   const songsService = new SongsService(pool);
   const usersService = new UsersService(pool);
   const authenticationsService = new AuthenticationsService(pool);
+  const collaborationsService = new CollaborationsService();
+  const playlistsService = new PlaylistsService(pool, collaborationsService);
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -41,12 +47,14 @@ const init = async () => {
         origin: ['*'],
       },
     },
+    debug: {
+      log: ['error'],
+      request: ['error', 'uncaught', 'unhandled'],
+    },
   });
 
   server.ext('onPreResponse', (request, h) => {
     const { response } = request;
-
-    console.log(response);
 
     if (response instanceof Error) {
       if (response instanceof ClientError) {
@@ -124,6 +132,17 @@ const init = async () => {
           usersService,
           tokenManager: TokenManager,
           validator: AuthenticationsValidator,
+        },
+      },
+      {
+        plugin: playlists,
+        options: {
+          playlistsService,
+          songsService,
+          validator: PlaylistsValidator,
+          authenticationsService,
+          tokenManager: TokenManager,
+          usersService,
         },
       },
     ],
