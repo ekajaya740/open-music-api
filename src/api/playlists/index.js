@@ -11,6 +11,7 @@ module.exports = {
     authenticationsService,
     tokenManager,
     usersService,
+    collaborationsService,
   }) => {
     const playlistsHandler = new PlaylistsHandler(
       playlistsService,
@@ -19,6 +20,7 @@ module.exports = {
       authenticationsService,
       tokenManager,
       usersService,
+      collaborationsService,
     );
     server.route(routes(playlistsHandler));
   },

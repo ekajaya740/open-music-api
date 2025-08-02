@@ -6,6 +6,7 @@ class PlaylistsHandler {
     authenticationsService,
     tokenManager,
     usersService,
+    collaborationsService,
   ) {
     this._playlistsService = playlistsService;
     this._songsService = songsService;
@@ -13,6 +14,7 @@ class PlaylistsHandler {
     this._authenticationsService = authenticationsService;
     this._tokenManager = tokenManager;
     this._usersService = usersService;
+    this._collaborationsService = collaborationsService;
   }
 
   async postPlaylistHandler(request, h) {
@@ -74,7 +76,7 @@ class PlaylistsHandler {
     const { songId } = request.payload;
     const { id: playlistId } = request.params;
 
-    await this._playlistsService.verifyPlaylistOwner(playlistId, credentialId);
+    await this._playlistsService.verifyPlaylistAccess(playlistId, credentialId);
     await this._songsService.getSongById(songId);
 
     await this._playlistsService.addSongToPlaylist({
@@ -96,7 +98,7 @@ class PlaylistsHandler {
     const playlistId = request.params.id;
     const { id: credentialId } = request.auth.credentials;
 
-    await this._playlistsService.verifyPlaylistOwner(playlistId, credentialId);
+    await this._playlistsService.verifyPlaylistAccess(playlistId, credentialId);
 
     const playlist = await this._playlistsService.getPlaylistById(playlistId);
 
@@ -121,8 +123,7 @@ class PlaylistsHandler {
     const { id: playlistId } = request.params;
     const { id: credentialId } = request.auth.credentials;
 
-
-    await this._playlistsService.verifyPlaylistOwner(playlistId, credentialId);
+    await this._playlistsService.verifyPlaylistAccess(playlistId, credentialId);
 
     const { songId } = request.payload;
 

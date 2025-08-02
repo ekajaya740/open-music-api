@@ -33,9 +33,9 @@ class PlaylistsService {
     const query = {
       text: `SELECT p.id, p.name, u.username
       FROM playlists p
-      LEFT JOIN collaborations c ON c.playlist_id = p.id
+      LEFT JOIN collaborations c ON c."playlistId" = p.id
       LEFT JOIN users u ON u.id = p.owner
-      WHERE p.owner = $1 OR c.user_id = $1`,
+      WHERE p.owner = $1 OR c."userId" = $1`,
       values: [userId],
     };
 
@@ -122,6 +122,21 @@ class PlaylistsService {
     };
 
     await this._pool.query(query);
+  }
+
+  async verifyPlaylistAccess(playlistId, userId) {
+    try {
+      await this.verifyPlaylistOwner(playlistId, userId);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
+      try {
+        await this._collaborationsService.verifyCollaborator(playlistId, userId);
+      } catch {
+        throw error;
+      }
+    }
   }
 
   async verifyPlaylistOwner(id, owner) {

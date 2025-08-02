@@ -3,7 +3,6 @@ require('dotenv').config();
 const Hapi = require('@hapi/hapi');
 const { Pool } = require('pg');
 const Jwt = require('@hapi/jwt');
-
 const albums = require('./api/albums');
 const { AlbumsService } = require('./services/AlbumsService');
 const { AlbumsValidator } = require('./validator/albums');
@@ -22,6 +21,7 @@ const playlists = require('./api/playlists');
 const { PlaylistsService } = require('./services/PlaylistsService');
 const { PlaylistsValidator } = require('./validator/playlists');
 const CollaborationsService = require('./services/CollaborationsService');
+const collaborations = require('./api/collaborations');
 
 const init = async () => {
   const pool = new Pool({
@@ -36,7 +36,7 @@ const init = async () => {
   const songsService = new SongsService(pool);
   const usersService = new UsersService(pool);
   const authenticationsService = new AuthenticationsService(pool);
-  const collaborationsService = new CollaborationsService();
+  const collaborationsService = new CollaborationsService(pool);
   const playlistsService = new PlaylistsService(pool, collaborationsService);
 
   const server = Hapi.server({
@@ -142,6 +142,15 @@ const init = async () => {
           validator: PlaylistsValidator,
           authenticationsService,
           tokenManager: TokenManager,
+          usersService,
+          collaborationsService,
+        },
+      },
+      {
+        plugin: collaborations,
+        options: {
+          collaborationsService,
+          playlistsService,
           usersService,
         },
       },
