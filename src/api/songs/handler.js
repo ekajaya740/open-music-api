@@ -1,13 +1,14 @@
 class SongHandler {
-  constructor(service, validator) {
-    this._service = service;
+  constructor(songsService, playlistSongActivitiesService, validator) {
+    this._songsService = songsService;
+    this._playlistSongActivitiesService = playlistSongActivitiesService;
     this._validator = validator;
   }
 
   async getSongsHandler(request, h) {
     const q = request.query;
 
-    const songs = await this._service.getSongs(q);
+    const songs = await this._songsService.getSongs(q);
 
     const response = h.response({
       status: 'success',
@@ -25,7 +26,7 @@ class SongHandler {
     this._validator.validatePayload(request.payload);
     const body = request.payload;
 
-    const songId = await this._service.addSong(body);
+    const songId = await this._songsService.addSong(body);
 
     const response = h.response({
       status: 'success',
@@ -43,9 +44,7 @@ class SongHandler {
   async getSongByIdHandler(request, h) {
     const { id } = request.params;
 
-    const song = await this._service.getSongById(id);
-
-    console.log('ID', song);
+    const song = await this._songsService.getSongById(id);
 
     const response = h.response({
       status: 'success',
@@ -64,7 +63,7 @@ class SongHandler {
     const { id } = request.params;
     const body = request.payload;
 
-    await this._service.updateSongById(id, body);
+    await this._songsService.updateSongById(id, body);
 
     const response = h.response({
       status: 'success',
@@ -78,7 +77,20 @@ class SongHandler {
   async deleteSongByIdHandler(request, h) {
     const { id } = request.params;
 
-    await this._service.deleteSongById(id);
+    const song = await this._songsService.getSongById(id);
+
+    if (song == null) {
+      const response = h.response({
+        status: 'fail',
+        message: 'Lagu gagal dihapus. Id tidak ditemukan',
+      });
+
+      response.code(404);
+
+      return response;
+    }
+
+    await this._songsService.deleteSongById(id);
 
     const response = h.response({
       status: 'success',

@@ -96,15 +96,16 @@ class PlaylistsService {
          LEFT JOIN songs s ON s.id = ps."songId"
          WHERE p.id = $1`,
       values: [id],
-
     };
+
+    
 
     const result = await this._pool.query(query);
 
     return result.rows[0];
   }
 
-  async deleteSongFromPlaylist(playlistId, songId) {
+  async deleteSongFromPlaylist(playlistId, songId, userId) {
     const checkQuery = {
       text: 'SELECT id FROM playlist_songs WHERE "playlistId" = $1 AND "songId" = $2',
       values: [playlistId, songId],
@@ -117,11 +118,13 @@ class PlaylistsService {
     }
 
     const query = {
-      text: 'DELETE FROM playlist_songs WHERE "playlistId" = $1 AND "songId" = $2',
+      text: 'DELETE FROM playlist_songs WHERE "playlistId" = $1 AND "songId" = $2 RETURNING "songId"',
       values: [playlistId, songId],
     };
 
-    await this._pool.query(query);
+    const deletedSong = await this._pool.query(query);
+
+    return deletedSong.rows[0].songId;
   }
 
   async verifyPlaylistAccess(playlistId, userId) {

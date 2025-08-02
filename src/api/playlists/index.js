@@ -12,6 +12,7 @@ module.exports = {
     tokenManager,
     usersService,
     collaborationsService,
+    playlistSongActivitiesService,
   }) => {
     const playlistsHandler = new PlaylistsHandler(
       playlistsService,
@@ -21,6 +22,7 @@ module.exports = {
       tokenManager,
       usersService,
       collaborationsService,
+      playlistSongActivitiesService,
     );
     server.route(routes(playlistsHandler));
   },

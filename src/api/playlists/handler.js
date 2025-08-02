@@ -7,6 +7,7 @@ class PlaylistsHandler {
     tokenManager,
     usersService,
     collaborationsService,
+    playlistSongActivitiesService,
   ) {
     this._playlistsService = playlistsService;
     this._songsService = songsService;
@@ -15,6 +16,7 @@ class PlaylistsHandler {
     this._tokenManager = tokenManager;
     this._usersService = usersService;
     this._collaborationsService = collaborationsService;
+    this._playlistSongActivitiesService = playlistSongActivitiesService;
   }
 
   async postPlaylistHandler(request, h) {
@@ -57,6 +59,20 @@ class PlaylistsHandler {
     const { id: credentialId } = request.auth.credentials;
 
     await this._playlistsService.verifyPlaylistOwner(id, credentialId);
+
+    const playlist = await this._playlistsService.getPlaylistById(id);
+
+    if (playlist == null) {
+      const response = h.response({
+        status: 'fail',
+        message: 'Playlist gagal dihapus. Id tidak ditemukan',
+      });
+
+      response.code(404);
+
+      return response;
+    }
+
     await this._playlistsService.deletePlaylist(id);
 
     const response = h.response({
@@ -83,6 +99,13 @@ class PlaylistsHandler {
       playlistId,
       songId,
       userId: credentialId,
+    });
+
+    await this._playlistSongActivitiesService.addPlaylistSongActivity({
+      playlistId,
+      songId,
+      userId: credentialId,
+      action: 'add',
     });
 
     const response = h.response({
@@ -127,7 +150,14 @@ class PlaylistsHandler {
 
     const { songId } = request.payload;
 
-    await this._playlistsService.deleteSongFromPlaylist(playlistId, songId);
+    const deletedSongId = await this._playlistsService.deleteSongFromPlaylist(playlistId, songId, credentialId);
+
+    await this._playlistSongActivitiesService.addPlaylistSongActivity({
+      playlistId,
+      songId: deletedSongId,
+      userId: credentialId,
+      action: 'delete',
+    });
 
     const response = h.response({
       status: 'success',

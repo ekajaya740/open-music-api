@@ -22,6 +22,8 @@ const { PlaylistsService } = require('./services/PlaylistsService');
 const { PlaylistsValidator } = require('./validator/playlists');
 const CollaborationsService = require('./services/CollaborationsService');
 const collaborations = require('./api/collaborations');
+const PlaylistSongActivitiesService = require('./services/PlaylistSongActivitiesService');
+const playlistSongActivities = require('./api/playlist_song_activities');
 
 const init = async () => {
   const pool = new Pool({
@@ -32,6 +34,7 @@ const init = async () => {
     password: process.env.PGPASSWORD,
   });
 
+  const playlistSongActivitiesService = new PlaylistSongActivitiesService(pool);
   const albumsService = new AlbumsService(pool);
   const songsService = new SongsService(pool);
   const usersService = new UsersService(pool);
@@ -114,7 +117,8 @@ const init = async () => {
       {
         plugin: songs,
         options: {
-          service: songsService,
+          songsService,
+          playlistSongActivitiesService,
           validator: SongsValidator,
         },
       },
@@ -144,6 +148,7 @@ const init = async () => {
           tokenManager: TokenManager,
           usersService,
           collaborationsService,
+          playlistSongActivitiesService,
         },
       },
       {
@@ -153,6 +158,14 @@ const init = async () => {
           playlistsService,
           usersService,
         },
+      },
+      {
+        plugin: playlistSongActivities,
+        options: {
+          playlistSongActivitiesService,
+          playlistsService,
+        },
+
       },
     ],
   );

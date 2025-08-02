@@ -30,32 +30,31 @@ class SongsService {
   }
 
   async getSongs({ title, performer }) {
-    let queryText = 'SELECT id, title, performer FROM songs';
+    let queryText = 'SELECT id, title, performer FROM songs WHERE "deletedAt" IS NULL';
     const values = [];
     const conditions = [];
 
     if (title) {
       values.push(`%${title.toLowerCase()}%`);
-      conditions.push(`LOWER(title) LIKE $${values.length}`);
+      conditions.push(`LOWER(title) LIKE $${values.length}`); // $1, $2, etc.
     }
 
     if (performer) {
       values.push(`%${performer.toLowerCase()}%`);
-      conditions.push(`LOWER(performer) LIKE $${values.length}`);
+      conditions.push(`LOWER(performer) LIKE $${values.length}`); // $1, $2, etc.
     }
 
     if (conditions.length > 0) {
-      queryText += ` WHERE ${conditions.join(' AND ')}`;
+      queryText += ` AND ${conditions.join(' AND ')}`;
     }
 
     const result = await this._pool.query(queryText, values);
-
     return result.rows;
   }
 
   async getSongById(id) {
     const query = {
-      text: 'SELECT id, title, year, performer, genre, duration, "albumId" FROM songs WHERE id = $1',
+      text: 'SELECT id, title, year, performer, genre, duration, "albumId" FROM songs WHERE id = $1 AND "deletedAt" IS NULL',
       values: [id],
     };
 
@@ -74,7 +73,7 @@ class SongsService {
     const updatedAt = new Date().toISOString();
 
     const query = {
-      text: 'UPDATE songs SET title = $1, year = $2, genre = $3, performer = $4, duration = $5, "albumId" = $6, "updatedAt" = $7 WHERE id = $8 RETURNING id',
+      text: 'UPDATE songs SET title = $1, year = $2, genre = $3, performer = $4, duration = $5, "albumId" = $6, "updatedAt" = $7 WHERE id = $8 AND "deletedAt" IS NULL RETURNING id',
       values: [
         title, year, genre, performer, duration, albumId, updatedAt, id,
       ],
@@ -91,7 +90,7 @@ class SongsService {
 
   async deleteSongById(id) {
     const query = {
-      text: 'DELETE FROM songs WHERE id = $1 RETURNING id',
+      text: 'UPDATE songs SET "deletedAt" = NOW() WHERE id = $1 RETURNING id',
       values: [id],
     };
 
