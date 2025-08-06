@@ -28,8 +28,8 @@ class AlbumsService {
   }
 
   async getAlbumById(id) {
-    const query = {
-      text: 'SELECT * FROM albums WHERE id = $1',
+    const albumQuery = {
+      text: 'SELECT id, name, year, cover AS "coverUrl", "createdAt", "updatedAt" FROM albums WHERE id = $1',
       values: [id],
     };
 
@@ -39,28 +39,34 @@ class AlbumsService {
 
     };
 
-    const result = await this._pool.query(query);
+    const album = await this._pool.query(albumQuery);
 
     const songs = await this._pool.query(songsQuery);
 
-    const finalResult = {
-      ...result.rows[0],
-      songs: songs.rows,
-    };
-
-    if (!result.rows.length) {
+    if (!album.rows.length) {
       throw new NotFoundError('Album tidak ditemukan');
     }
+
+    const finalResult = {
+      ...album.rows[0],
+      songs: songs.rows,
+    };
 
     return finalResult;
   }
 
-  async updateAlbumById(id, { name, year }) {
+  async updateAlbumById(id, { name, year, cover }) {
     const updatedAt = new Date().toISOString();
 
     const query = {
-      text: 'UPDATE albums SET name = $1, year = $2, "updatedAt" = $3 WHERE id = $4 RETURNING id',
-      values: [name, year, updatedAt, id],
+      text: `UPDATE albums 
+        SET 
+          name = COALESCE($1, name), 
+          year = COALESCE($2, year),
+          cover = COALESCE($3, cover),
+          "updatedAt" = $4
+        WHERE id = $5 RETURNING id`,
+      values: [name, year, cover, updatedAt, id],
     };
 
     const result = await this._pool.query(query);

@@ -3,9 +3,11 @@ require('dotenv').config();
 const Hapi = require('@hapi/hapi');
 const { Pool } = require('pg');
 const Jwt = require('@hapi/jwt');
+const path = require('path');
 const albums = require('./api/albums');
 const { AlbumsService } = require('./services/AlbumsService');
 const { AlbumsValidator } = require('./validator/albums');
+const { UploadsValidator } = require('./validator/uploads');
 const { ClientError } = require('./exceptions/ClientError');
 const songs = require('./api/songs');
 const { SongsService } = require('./services/SongsService');
@@ -44,7 +46,6 @@ const init = async () => {
   const authenticationsService = new AuthenticationsService(pool);
   const collaborationsService = new CollaborationsService(pool);
   const playlistsService = new PlaylistsService(pool, collaborationsService);
-
   const server = Hapi.server({
     port: process.env.PORT,
     host: process.env.HOST,
@@ -113,8 +114,9 @@ const init = async () => {
       {
         plugin: albums,
         options: {
-          service: albumsService,
-          validator: AlbumsValidator,
+          albumsService,
+          albumsValidator: AlbumsValidator,
+          uploadsValidator: UploadsValidator,
         },
       },
       {
