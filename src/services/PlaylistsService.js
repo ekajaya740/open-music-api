@@ -44,6 +44,7 @@ class PlaylistsService {
     return result.rows;
   }
 
+
   async deletePlaylist(id) {
     const query = {
       text: 'DELETE FROM playlists WHERE id = $1 RETURNING id',
@@ -98,8 +99,6 @@ class PlaylistsService {
       values: [id],
     };
 
-    
-
     const result = await this._pool.query(query);
 
     return result.rows[0];
@@ -152,6 +151,7 @@ class PlaylistsService {
     if (!result.rows.length) {
       throw new NotFoundError('Playlist tidak ditemukan');
     }
+
     const playlist = result.rows[0];
     if (playlist.owner !== owner) {
       throw new AuthorizationError('Anda tidak berhak mengakses resource ini');

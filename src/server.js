@@ -24,6 +24,9 @@ const CollaborationsService = require('./services/CollaborationsService');
 const collaborations = require('./api/collaborations');
 const PlaylistSongActivitiesService = require('./services/PlaylistSongActivitiesService');
 const playlistSongActivities = require('./api/playlist_song_activities');
+const _exports = require('./api/exports');
+const ProducerService = require('./services/ProducerService');
+const { ExportsValidator } = require('./validator/exports');
 
 const init = async () => {
   const pool = new Pool({
@@ -165,7 +168,14 @@ const init = async () => {
           playlistSongActivitiesService,
           playlistsService,
         },
-
+      },
+      {
+        plugin: _exports,
+        options: {
+          producerService: ProducerService,
+          playlistsService,
+          validator: ExportsValidator,
+        },
       },
     ],
   );
